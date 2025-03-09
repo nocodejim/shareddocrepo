@@ -1,0 +1,99 @@
+https://claude.site/artifacts/f85e4d3b-1cdf-4c0b-a81d-0cf7c9cbb163
+
+# CLAUDE-ALIGNED PROBLEM SOLVING FRAMEWORK
+
+## DEPTH OF PROCESSING INSTRUCTION
+
+Rather than artificial step counting, instruct Claude on the desired depth of processing:
+
+- **Quick Assessment**: "Provide a quick analysis focusing only on the most critical aspects."
+- **Standard Processing**: "Give a balanced analysis considering key factors and common edge cases."
+- **Deep Analysis**: "Perform a comprehensive analysis exploring multiple perspectives and subtle implications."
+- **Exhaustive Examination**: "Conduct an exhaustive analysis considering all possible angles, edge cases, and potential flaws."
+
+## MULTIDIMENSIONAL EXPLORATION
+
+Instead of linear steps, encourage parallel consideration of multiple dimensions:
+
+```
+Consider this problem through these lenses:
+- Technical feasibility
+- Resource constraints
+- User experience implications
+- Long-term maintenance
+- Edge cases and exceptions
+```
+
+## SELF-CRITICISM PROMPTS
+
+Rather than arbitrary drafts, use targeted prompts for self-evaluation:
+
+```
+After developing your initial understanding:
+- What alternative approaches haven't you considered?
+- What assumptions are you making that might be incorrect?
+- What would an expert in this domain critique about your approach?
+- What edge cases might break your solution?
+- Where is your solution unnecessarily complex?
+```
+
+## SOLUTION REFINEMENT CYCLE
+
+Instead of prescribed drafts, use iterative refinement based on assessment:
+
+1. **Initial Solution**: Develop a first approach to the problem
+2. **Critical Assessment**: Identify specific weaknesses, simplification opportunities, and edge cases
+3. **Refined Solution**: Address the identified issues
+4. **Final Verification**: Confirm the solution meets all requirements and handles edge cases
+
+## MINIMALIST PRINCIPLES
+
+Encourage efficient problem-solving through these guidelines:
+
+- Focus first on understanding the problem completely before proposing solutions
+- Start with the simplest possible approach that could work
+- Add complexity only when necessary and with clear justification
+- Fix specifically what's broken rather than rewriting functioning parts
+- Consider maintenance costs of any complex solution
+- Prefer clarity over cleverness
+- Test solutions against edge cases before finalizing
+
+## TRANSPARENCY REQUIREMENTS
+
+Request specific insights into Claude's reasoning process:
+
+```
+Please share:
+- Key considerations that informed your solution
+- Alternative approaches you evaluated but didn't choose
+- Assumptions you're making about the problem
+- Limitations or edge cases your solution may not handle
+- Areas where you have lower confidence in your approach
+```
+
+## CONTEXT INTEGRATION
+
+Help Claude provide more holistic analysis:
+
+```
+When analyzing this problem, consider:
+- Similar problems or patterns you're familiar with
+- Relevant principles from the domain
+- How this fits into the broader system
+- Practical implementation considerations
+- Common pitfalls in similar situations
+```
+
+## VERIFICATION CHECKLIST
+
+Before finalizing a solution, request specific verification:
+
+```
+Before finalizing, please verify:
+- The solution addresses the core problem
+- All requirements are met
+- Edge cases are handled appropriately
+- The approach is as simple as possible
+- No unnecessary changes are made to functional elements
+- Clear explanation is provided for each decision
+```
