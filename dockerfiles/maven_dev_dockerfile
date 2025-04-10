@@ -1,0 +1,50 @@
+# Use Maven with OpenJDK 17 as the base image
+FROM maven:3.9-eclipse-temurin-17
+
+# Avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install additional dependencies
+RUN apt-get update && apt-get install -y \
+    sudo \
+    openssl \
+    ca-certificates \
+    curl \
+    wget \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user with sudo privileges
+RUN useradd -m -s /bin/bash developer && \
+    echo "developer ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/developer
+
+# Set working directory
+WORKDIR /home/developer
+
+# Copy the modular setup scripts and certificate
+COPY common_setup.sh container_setup.sh ./
+COPY Zscaler_Root_CA.crt ./
+
+# Make the scripts executable
+RUN chmod +x common_setup.sh container_setup.sh
+
+# Run the setup scripts AS ROOT
+RUN ./common_setup.sh && ./container_setup.sh
+
+# Fix permissions for Maven directories
+RUN mkdir -p /home/developer/.m2 && \
+    chown -R developer:developer /home/developer/.m2 && \
+    # Also ensure the project directory permissions are correct
+    # Adjust the path below to match your actual project location
+    mkdir -p /home/developer/app && \
+    chown -R developer:developer /home/developer/app
+
+# Now that setup is complete, switch to the non-root user
+USER developer
+
+# Set Maven environment variables (if not already set by the base image)
+ENV MAVEN_CONFIG=/home/developer/.m2
+
+# Default command when container starts
+CMD ["/bin/bash"]
