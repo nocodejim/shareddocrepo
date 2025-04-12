@@ -1,0 +1,57 @@
+# Use Maven with OpenJDK 17 as the base image
+FROM maven:3.9-eclipse-temurin-17
+
+# Avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install additional dependencies
+RUN apt-get update && apt-get install -y \
+    sudo \
+    openssl \
+    ca-certificates \
+    curl \
+    wget \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user with sudo privileges
+RUN useradd -m -s /bin/bash developer && \
+    echo "developer ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/developer
+
+# Set working directory
+WORKDIR /home/developer
+
+# Copy the modular setup scripts and certificate
+COPY common_setup.sh container_setup.sh ./
+COPY Zscaler_Root_CA.crt ./
+
+# Make the scripts executable
+RUN chmod +x common_setup.sh container_setup.sh
+
+# Run the setup scripts AS ROOT
+RUN ./common_setup.sh && ./container_setup.sh
+
+# Fix permissions for Maven directories
+RUN mkdir -p /home/developer/.m2 && \
+    chown -R developer:developer /home/developer/.m2
+
+# Create project directory with correct permissions
+RUN mkdir -p /home/developer/project && \
+    chown -R developer:developer /home/developer/project
+
+# Copy the permissions fix script
+COPY fix-permissions.sh /home/developer/
+RUN chmod +x /home/developer/fix-permissions.sh
+
+# Now that setup is complete, switch to the non-root user
+USER developer
+
+# Set Maven environment variables (if not already set by the base image)
+ENV MAVEN_CONFIG=/home/developer/.m2
+
+# Set the working directory to the project directory
+WORKDIR /home/developer/project
+
+# Default command when container starts
+CMD ["/bin/bash"]
