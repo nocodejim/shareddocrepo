@@ -1,4 +1,4 @@
-# Complete Technical Guide to GitHub Copilot (2025)
+# Complete Technical Guide to GitHub Copilot (2026)
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -19,7 +19,7 @@
 
 ## Introduction
 
-GitHub Copilot has evolved significantly since its initial release, transforming from a code completion tool into a comprehensive AI-powered development assistant. As of 2025, GitHub Copilot offers multiple operational modes, integration with leading AI models, and features designed for individual developers and enterprise teams alike.
+GitHub Copilot has evolved significantly since its initial release, transforming from a code completion tool into a comprehensive AI-powered development assistant. As of 2026, GitHub Copilot offers multiple operational modes, integration with leading AI models, and features designed for individual developers and enterprise teams alike. Key advancements include **Agentic Mode** for autonomous task execution and **MCP (Model Context Protocol)** integration for connecting to external tools.
 
 This technical guide covers all aspects of GitHub Copilot, from basic setup to advanced features, with specific attention to the differences between subscription tiers and how to maximize the tool's potential across various development scenarios.
 
@@ -34,7 +34,8 @@ GitHub Copilot is available across several tiers, each with distinct capabilitie
 | Code Completion | Limited | ✓ | ✓ | ✓ | ✓ |
 | Copilot Chat | Limited | ✓ | ✓ | ✓ | ✓ |
 | Multi-file Edits | - | ✓ | ✓ | ✓ | ✓ |
-| Agent Mode | - | ✓ | ✓ | ✓ | ✓ |
+| **Agent Mode** | - | ✓ | ✓ | ✓ | ✓ |
+| **MCP Integration** | - | ✓ | ✓ | ✓ | ✓ |
 | Premium Models | - | ✓ | ✓ | ✓ | ✓ |
 | Premium Requests | - | 300/month | 1500/month | 300/month | 1000/month |
 | CLI Support | Limited | ✓ | ✓ | ✓ | ✓ |
@@ -57,7 +58,8 @@ A conversational interface for asking coding questions, accessible in IDEs, on G
 Enables making changes across multiple files with a single prompt. Available through the "Edit Mode" interface.
 
 #### Agent Mode
-Autonomous operation where Copilot analyzes your codebase, suggests changes, runs terminal commands, and iterates until a task is complete.
+#### Agent Mode
+Autonomous operation where Copilot analyzes your codebase, suggests changes, runs terminal commands, and iterates until a task is complete. It leverages MCP to interact with tools outside the IDE.
 
 #### Specialized Features
 - **Next Edit Suggestions (NES)**: Predicts your next edit location and offers context-aware completions.
