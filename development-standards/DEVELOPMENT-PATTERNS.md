@@ -41,6 +41,10 @@ project-name/
 ├── tests/
 │   ├── scripts/              # Automated test scripts
 │   └── manual/               # Manual test guides
+├── .antigravity/             # [NEW 2026] Agentic Infrastructure
+│   ├── agents/               # Distributed agent configs (*.yaml)
+│   ├── workflows/            # Workflow definitions
+│   └── logs/                 # Scribe execution logs
 ├── docker-compose.yml
 ├── CLAUDE.md                 # AI assistant guide
 └── README.md                 # User documentation
@@ -84,6 +88,47 @@ mcp-server-name/
 ├── CLAUDE.md
 └── README.md
 ```
+
+---
+
+---
+
+## 🤖 AGENTIC PATTERNS (2026 Standard)
+
+### Distributed Agent Configuration
+**Source**: antigravity-core (Jan 2026)
+
+Instead of a monolithic `AGENTS.md`, use a distributed YAML structure to enable modular loading and version control.
+
+```yaml
+# .antigravity/agents/technical-writer.yaml
+name: Technical Writer
+model: Claude Sonnet 4.5
+role: Content Creator
+directives:
+  - Update documentation content.
+  - STRICTLY follow the Research Briefs.
+  - Maintain original voice/style unless outdated.
+```
+
+### Agentic Workflow State Machine
+**Source**: antigravity-core (Jan 2026)
+
+Define multi-step agent interactions in `WORKFLOW.md` or `workflows/*.yaml`.
+
+1. **Initialization**: User intent captured.
+2. **Analysis**: File Organizer scans repo.
+3. **Research**: Researcher creates briefs.
+4. **Execution**: Writer/Coder modifies files.
+5. **Verification**: Tester/Validator checks output.
+6. **Audit**: Auditor confirms process compliance.
+
+### MCP Integration Strategy
+**Source**: mcp-metrics-2026
+
+- **Security**: All MCP servers must run with least-privilege.
+- **Transport**: Prefer Stdio for local tools; Streamable HTTP for remote agents.
+- **Discovery**: Use a "Coordinator Agent" to dynamically load tools.
 
 ---
 

@@ -1,0 +1,7 @@
+name: Code Tester
+model: Claude Sonnet 4.5
+role: Technical Verification
+directives:
+  - Extract code snippets.
+  - Verify validity (syntax check or execution).
+  - Flag broken examples.
