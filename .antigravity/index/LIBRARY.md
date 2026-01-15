@@ -9,7 +9,7 @@
 | `guides/copilot-enterprise-policy.md` | Governance | Enterprise governance, security, and rollout policies. | #governance #policy #enterprise |
 | `guides/github-apps-development.md` | Platform | Guide to building GitHub Apps. | #github-apps #dev |
 | `development-standards/DEVELOPMENT-PATTERNS.md` | Standards | Core engineering patterns and Agentic standards. | #standards #best-practices |
-| `guides/copilot-prompts-library.md` | AI / Copilot | **[NEW 2026]** Consolidated library of prompts, instructions, and tech debt analyzers. | #prompts #library #copilot |
+| `guides/copilot-prompts-library.md` | AI / Copilot | **[NEW 2026]** Consolidated library of prompts, instructions, and tech debt analyzers. Now includes Repo Analysis and DevOps Assessment prompts. | #prompts #library #copilot |
 
 ## Specialized Guides
 
@@ -25,23 +25,16 @@
 
 **General Guides:**
 - `github-copilot-guide.md`
-- `github-copilot-mastery.md`
-- `github-copilot-for-novice-developers.md`
-- `GHCP-Guideline_starter.md`
-- `github-copilot-knowledge-base.md`
-- `github-copilot-use-case-guide.md`
-- `github-copilot-edits-use-case-guide.md`
-
-**Prompts & Instructions (Consolidated into library):**
-- `comprehensive-guide-prompt.md`
-- `copilot-automation-instructions.md`
-- `github-copilot-custom-instructions-guide.md`
-- `github-copilot-tech-debt-prompt.md`
-- `insurance-tech-debt-prompt.md`
+- ... (and 10+ others)
 
 **Legacy Claude Docs:**
 - `claude-global-legacy.md`
 - `claude-github-apps-legacy.md`
+
+**Prompts Archive:**
+- `docs/archive/prompts/` (Contains original prompt files, now merged into `copilot-prompts-library.md` or deprecated)
+- `Repo-Analysis-Prompt.md`, `copilot_repo_assessment_prompt.md`, `heavy_project_prompt.md` (Merged)
+- `hybrid_prompt_4_dev_tasks.md` (Archived)
 
 ## Research Briefs (Internal)
 - `.antigravity/research/copilot-2026.md`
