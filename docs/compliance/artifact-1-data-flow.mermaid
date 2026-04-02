@@ -1,0 +1,64 @@
+---
+title: "GitHub Copilot Business (EMU) — End-to-End Data Flow"
+---
+flowchart LR
+    subgraph DEV["Developer Environment"]
+        IDE["IDE / Editor\n(VS Code, JetBrains,\nNeovim, Xcode)"]
+        EXT["Copilot Extension\n• Assembles prompt payload\n• Current file + neighbors\n• Open tabs + imports\n• Chat history (if Chat)"]
+    end
+
+    subgraph GH["GitHub Platform (EMU Org)"]
+        PROXY["Copilot Proxy\ncopilot-proxy.githubusercontent.com\n*.business.githubcopilot.com\n─────────────────────\nTLS 1.2+ in transit"]
+        IDX["Repository Index\n(Semantic code search)\n─────────────────────\nBuilt from default branch\nFiltered by content exclusions\nStored on GitHub infra only"]
+        TEL["Telemetry & Logging\n─────────────────────\nUser Engagement Data\nAccept/dismiss signals\nLatency, errors\nRetention: 24 months"]
+    end
+
+    subgraph AZURE["Microsoft Azure"]
+        direction TB
+        AOAI["Azure OpenAI Tenant\n(GitHub-managed)\n─────────────────────\nModels: Raptor mini,\nGoldeneye (fine-tuned)\nRegion: US (unspecified)\nZDR: Yes\nRetention: None"]
+        OAI["OpenAI API Endpoints\n─────────────────────\nModels: GPT-4.1, GPT-5.x,\nCodex\nInfra: Azure + OpenAI own\n(Oracle, CoreWeave, Stargate?)\nRegion: US\nZDR: Yes\nRetention: None"]
+    end
+
+    subgraph ANTHRO["Anthropic Ecosystem"]
+        direction TB
+        BEDROCK["AWS Bedrock\n─────────────────────\nClaude models\nus-east-1, us-west-2,\nus-east-2\nZDR: Yes (GA only)\nRetention: None"]
+        ANTH_API["Anthropic PBC API\n─────────────────────\nClaude models\nRegion: US\nZDR: Yes (GA only)\nRetention: None (GA)\n⚠ Preview: may retain"]
+        VERTEX_C["GCP Vertex AI\n(Claude hosting)\n─────────────────────\nRegion: US\nZDR: Yes (GA only)\nRetention: None"]
+    end
+
+    subgraph GOOGLE["Google Cloud Platform"]
+        GEMINI["GCP Vertex AI\n(Gemini hosting)\n─────────────────────\nModels: Gemini 2.5 Pro,\n3 Pro, 3 Flash, 3.1 Pro\nRegions: us-central1,\nus-east1, us-east4, us-west1\nZDR: ⚠ Not explicitly documented\nRetention: No training, no logging"]
+    end
+
+    IDE -->|"Keystrokes +\nfile context"| EXT
+    EXT -->|"Prompt payload\n(code + metadata)\nTLS encrypted"| PROXY
+
+    PROXY -->|"Retrieval query\n(pre-prompt)"| IDX
+    IDX -->|"Relevant snippets\ninserted into prompt"| PROXY
+
+    PROXY -->|"Engagement events\n(pseudonymized)"| TEL
+
+    PROXY -->|"Prompt + metadata\nEncrypted: Yes\nData: code context,\nchat text, file paths\nRetention: 0 (IDE) /\n28d (non-IDE chat)"| AOAI
+    PROXY -->|"Prompt + metadata\nEncrypted: Yes\nRetention: 0"| OAI
+
+    PROXY -->|"Prompt + metadata\nEncrypted: Yes\nLeaves Azure boundary\nRetention: 0 (GA)"| BEDROCK
+    PROXY -->|"Prompt + metadata\nEncrypted: Yes\nRetention: 0 (GA)\n⚠ Preview: varies"| ANTH_API
+    PROXY -->|"Prompt + metadata\nEncrypted: Yes\nRetention: 0 (GA)"| VERTEX_C
+
+    PROXY -->|"Prompt + metadata\nEncrypted: Yes\nLeaves Azure boundary\nRetention: ⚠ No formal ZDR"| GEMINI
+
+    AOAI -->|"Suggestion\n(streamed)"| PROXY
+    OAI -->|"Suggestion"| PROXY
+    BEDROCK -->|"Suggestion"| PROXY
+    ANTH_API -->|"Suggestion"| PROXY
+    VERTEX_C -->|"Suggestion"| PROXY
+    GEMINI -->|"Suggestion"| PROXY
+
+    PROXY -->|"Suggestion\n(code / chat response)"| EXT
+    EXT -->|"Rendered in editor"| IDE
+
+    style DEV fill:#e8f4f8,stroke:#2196F3
+    style GH fill:#e8f5e9,stroke:#4CAF50
+    style AZURE fill:#e3f2fd,stroke:#1565C0
+    style ANTHRO fill:#fce4ec,stroke:#c62828
+    style GOOGLE fill:#fff3e0,stroke:#e65100

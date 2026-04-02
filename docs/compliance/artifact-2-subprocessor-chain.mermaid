@@ -1,0 +1,58 @@
+---
+title: "GitHub Copilot Business — Sub-Processor Chain & DPA Hierarchy"
+---
+graph TD
+    CUST["🏢 Customer (EMU Org)\nFinancial Services / Insurance\n━━━━━━━━━━━━━━━━━━━━\nData Controller or Processor\n(depends on use case)"]
+
+    GH["🔷 GitHub, Inc.\n(Microsoft subsidiary)\n━━━━━━━━━━━━━━━━━━━━\nRole: Data Processor\nGoverning doc: GitHub DPA +\nGitHub Generative AI Services Terms\n(eff. March 5, 2026)\nProcessing: United States"]
+
+    MSFT["🔷 Microsoft Corporation\n(Azure)\n━━━━━━━━━━━━━━━━━━━━\nRole: Sub-processor\nService: AI Inference (fine-tuned models)\nGoverning doc: Microsoft Product Terms\nfor GitHub Offerings\nProcessing: United States"]
+
+    OAI["🟡 OpenAI, L.L.C.\n━━━━━━━━━━━━━━━━━━━━\nRole: Sub-processor\nService: AI Inference (GPT/Codex)\nGoverning doc: GitHub–OpenAI\nZDR Agreement\n⚠ Customer has no direct DPA\nProcessing: United States\nInfra: Azure + OpenAI own DC"]
+
+    ANTH["🔴 Anthropic PBC\n━━━━━━━━━━━━━━━━━━━━\nRole: Sub-processor\nService: AI Inference (Claude)\nGoverning doc: GitHub–Anthropic\nZDR Agreement\n⚠ ZDR covers GA features ONLY\n⚠ Preview features: may retain data\n⚠ Customer has no direct DPA\nProcessing: United States"]
+
+    AWS["🟠 Amazon Web Services, Inc.\n━━━━━━━━━━━━━━━━━━━━\nRole: Sub-processor\nService: AI Inference (Bedrock –\nhosts Claude models)\nGoverning doc: GitHub–AWS agreement\nCommitment: No storage, no logging,\nno training\n⚠ Customer has no direct DPA\nProcessing: United States"]
+
+    GCP["🟢 Google Cloud Platform\n(Google LLC)\n━━━━━━━━━━━━━━━━━━━━\nRole: Sub-processor\nService: AI Inference (Gemini +\nsome Claude via Vertex AI)\nGoverning doc: GitHub–Google agreement\nCommitment: No training, no abuse logging\n⚠ NO explicit ZDR term documented\n⚠ Customer has no direct DPA\nProcessing: United States,\nBelgium, Singapore"]
+
+    FW["⬛ Fireworks AI, Inc.\n━━━━━━━━━━━━━━━━━━━━\nRole: Sub-processor\nService: AI Inference\nGoverning doc: GitHub–Fireworks agreement\n⚠ Limited public documentation\n⚠ Customer has no direct DPA\nProcessing: United States"]
+
+    CUST -->|"GitHub DPA\n+ Gen AI Services Terms\n(Customer must review)"| GH
+
+    GH -->|"Internal (subsidiary)\nMicrosoft Product Terms"| MSFT
+    GH -->|"Provider agreement\nZDR: ✅ Full"| OAI
+    GH -->|"Provider agreement\nZDR: ⚠ GA only"| ANTH
+    GH -->|"Provider agreement\nNo-store commitment"| AWS
+    GH -->|"Provider agreement\nZDR: ⚠ Undocumented"| GCP
+    GH -->|"Provider agreement\nDetails limited"| FW
+
+    subgraph CUSTOMER_ACTION["Customer Due Diligence Required"]
+        direction LR
+        R1["Review GitHub DPA &\nGen AI Services Terms"]
+        R2["Review GitHub sub-processor\nlist (30-day advance notice)"]
+        R3["Assess each sub-processor\nper TPRM framework"]
+        R4["Request SOC 2 Type II\nfrom GitHub Enterprise settings"]
+        R5["⚠ No direct DPA access\nto OpenAI / Anthropic / Google\n— must rely on GitHub's\nprovider agreements"]
+    end
+
+    subgraph GAPS["Identified Gaps & Unknowns"]
+        direction LR
+        G1["🔴 Anthropic ZDR gap\nfor preview features"]
+        G2["🔴 Google: no formal\nZDR term documented"]
+        G3["🟡 OpenAI infra may span\nnon-Azure DC (Oracle,\nCoreWeave, Stargate)"]
+        G4["🟡 GCP processing locations\ninclude Belgium, Singapore"]
+        G5["🟡 Fireworks AI: minimal\npublic documentation"]
+        G6["🔴 No direct contractual\nrelationship between\ncustomer and any AI provider"]
+    end
+
+    style CUST fill:#e8eaf6,stroke:#283593,stroke-width:3px
+    style GH fill:#e3f2fd,stroke:#1565C0,stroke-width:2px
+    style MSFT fill:#e3f2fd,stroke:#1565C0
+    style OAI fill:#fff9c4,stroke:#f9a825
+    style ANTH fill:#ffebee,stroke:#c62828
+    style AWS fill:#fff3e0,stroke:#e65100
+    style GCP fill:#e8f5e9,stroke:#2e7d32
+    style FW fill:#f5f5f5,stroke:#616161
+    style CUSTOMER_ACTION fill:#e8eaf6,stroke:#283593,stroke-dasharray:5
+    style GAPS fill:#ffebee,stroke:#c62828,stroke-dasharray:5
