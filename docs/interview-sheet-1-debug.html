@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Interview — Diagnosis Screen</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #4f8ef7;
+    --accent2: #f7c94f;
+    --danger: #f75f5f;
+    --success: #4fd49e;
+    --text: #e2e6f0;
+    --muted: #7b82a0;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 40px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .doc-header {
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .doc-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .doc-title span { color: var(--accent); }
+  .doc-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; line-height: 1.8; }
+  .badge {
+    display: inline-block;
+    background: var(--accent2);
+    color: #0f1117;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-left: 8px;
+  }
+  .badge.danger { background: var(--danger); color: #fff; }
+  .badge.success { background: var(--success); color: #0f1117; }
+
+  /* Section */
+  h2 {
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Scenario box */
+  .scenario {
+    background: var(--surface);
+    border-left: 3px solid var(--accent2);
+    padding: 16px 20px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 20px;
+  }
+  .scenario strong { color: var(--accent2); font-weight: 600; }
+  .scenario p { margin-top: 8px; color: var(--text); line-height: 1.6; }
+
+  /* Timeline */
+  .timeline {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .timeline-header, .tl-cell {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+  .timeline-header {
+    background: var(--surface2);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .tl-cell { border-bottom: 1px solid var(--border); }
+  .tl-cell:nth-last-child(-n+3) { border-bottom: none; }
+  .tl-cell.time { font-family: var(--mono); font-size: 11px; color: var(--accent2); background: var(--surface); }
+  .tl-cell.prompt { color: var(--muted); font-style: italic; }
+  .p0 { border-left: 3px solid var(--danger); }
+  .p1 { border-left: 3px solid var(--accent2); }
+
+  /* Question cards */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+  }
+  .q-card.p0 { border-left: 3px solid var(--danger); }
+  .q-card.p1 { border-left: 3px solid var(--accent); }
+  .q-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .q-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .q-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .q-col-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .q-col-label.why { color: var(--muted); }
+  .q-col-label.strong { color: var(--success); }
+  .q-col-label.red { color: var(--danger); }
+  .q-col-content { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .q-col-content.strong-text { color: #a0e8c8; }
+  .q-col-content.red-text { color: #f7a0a0; }
+
+  /* Code block */
+  pre {
+    background: #0a0c12;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #a8b4d0;
+    overflow-x: auto;
+    margin-bottom: 12px;
+    line-height: 1.7;
+  }
+  .comment { color: #4a5270; }
+  .cmd { color: #7bc8f7; }
+
+  /* Scoring */
+  .score-grid {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .score-cell {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .score-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .score-num {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-num.s5 { color: var(--success); }
+  .score-num.s4 { color: #7be8b8; }
+  .score-num.s3 { color: var(--accent2); }
+  .score-num.s2 { color: #f7a04f; }
+  .score-num.s1 { color: var(--danger); }
+
+  /* Flags */
+  .flag-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .flag-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+  }
+  .flag-box.green { border-left: 3px solid var(--success); }
+  .flag-box.red { border-left: 3px solid var(--danger); }
+  .flag-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .flag-title.green { color: var(--success); }
+  .flag-title.red { color: var(--danger); }
+  ul { padding-left: 14px; }
+  li { font-size: 12px; color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
+  li.green-text { color: #a0e8c8; }
+  li.red-text { color: #f7a0a0; }
+
+  /* Preferred fix */
+  .fix-steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+  }
+  .fix-steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+  }
+  .fix-steps li::before {
+    content: counter(step);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--surface2);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fix-steps li:last-child { border-bottom: none; }
+
+  /* Footer */
+  .footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media print {
+    body { background: #fff; color: #000; padding: 20px; }
+    :root {
+      --bg: #fff; --surface: #f6f8fa; --surface2: #eef0f5;
+      --border: #d0d7de; --accent: #0969da; --accent2: #9a6700;
+      --danger: #cf222e; --success: #1a7f37; --text: #1f2328; --muted: #57606a;
+    }
+    pre { background: #f6f8fa; }
+    .doc-meta { color: #57606a; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <div>
+    <div class="doc-title">DevOps Interview <span>/ Sheet 1</span></div>
+    <div style="font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px;">Diagnosis & Debugging Screen — Rancher / Helm / GitHub Actions</div>
+  </div>
+  <div class="doc-meta">
+    Duration: 10 min<br>
+    Format: Scenario-based<br>
+    Focus: RBAC · Helm · kubectl safety
+  </div>
+</div>
+
+<!-- SCENARIO -->
+<h2>Scenario</h2>
+<div class="scenario">
+  <strong>Setup for candidate:</strong>
+  <p>A GitHub Actions deployment dry run for <code>app-dev</code> fails before Helm executes. The workflow authenticates to a private registry, prepares Helm values, and runs a Kubernetes preflight check. The failure is an RBAC error: the preflight requests visibility into <code>kube-system</code> or cluster-level resources, but the deploy identity is intentionally scoped to <code>target-namespace</code>.</p>
+  <p style="margin-top:10px;"><strong>Ask:</strong> Walk through how you would diagnose this and fix it safely — without casually broadening permissions.</p>
+  <p style="margin-top:8px; font-size:11px; color: var(--muted);">Expected direction: adjust the preflight to namespace-scoped checks and verify the deploy path, not grant cluster-wide access.</p>
+</div>
+
+<!-- ARCHITECTURE -->
+<h2>Architecture (Interviewer Reference)</h2>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 880 130" style="margin-bottom:20px;">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#4f8ef7"/>
+    </marker>
+  </defs>
+  <style>
+    .b { fill:#1a1d27; stroke:#2e3350; stroke-width:1.5; rx:6; }
+    .bt { font-family:'IBM Plex Sans',sans-serif; font-size:12px; fill:#e2e6f0; font-weight:600; }
+    .bs { font-family:'IBM Plex Mono',monospace; font-size:10px; fill:#7b82a0; }
+    .ln { stroke:#4f8ef7; stroke-width:1.8; marker-end:url(#arr); fill:none; }
+  </style>
+  <rect class="b" x="10" y="25" width="130" height="70" rx="6"/>
+  <text class="bt" x="75" y="56" text-anchor="middle">GitHub Repo</text>
+  <text class="bs" x="75" y="74" text-anchor="middle">code + workflow</text>
+  <line class="ln" x1="140" y1="60" x2="185" y2="60"/>
+  <rect class="b" x="185" y="25" width="145" height="70" rx="6"/>
+  <text class="bt" x="257" y="52" text-anchor="middle">GitHub Actions</text>
+  <text class="bs" x="257" y="69" text-anchor="middle">build / deploy job</text>
+  <text class="bs" x="257" y="85" text-anchor="middle">preflight check</text>
+  <line class="ln" x1="330" y1="60" x2="375" y2="60"/>
+  <rect class="b" x="375" y="25" width="150" height="70" rx="6"/>
+  <text class="bt" x="450" y="52" text-anchor="middle">Private Registry</text>
+  <text class="bs" x="450" y="69" text-anchor="middle">chart + image tags</text>
+  <line class="ln" x1="525" y1="60" x2="570" y2="60"/>
+  <rect class="b" x="570" y="25" width="155" height="70" rx="6"/>
+  <text class="bt" x="647" y="52" text-anchor="middle">Rancher / K8s</text>
+  <text class="bs" x="647" y="69" text-anchor="middle">target-namespace</text>
+  <line class="ln" x1="725" y1="45" x2="760" y2="30"/>
+  <line class="ln" x1="725" y1="75" x2="760" y2="90"/>
+  <rect class="b" x="760" y="10" width="110" height="40" rx="6"/>
+  <text class="bt" x="815" y="35" text-anchor="middle">Workloads</text>
+  <rect class="b" x="760" y="70" width="110" height="40" rx="6"/>
+  <text class="bt" x="815" y="95" text-anchor="middle">Ingress / App</text>
+</svg>
+
+<!-- INTERVIEW FLOW -->
+<h2>10-Minute Flow</h2>
+<div class="timeline">
+  <div class="timeline-header">Time</div>
+  <div class="timeline-header">Focus</div>
+  <div class="timeline-header">Opening Prompt</div>
+
+  <div class="tl-cell time p0">0:00–1:00</div>
+  <div class="tl-cell p0">Frame the scenario <span class="badge danger">P0</span></div>
+  <div class="tl-cell prompt p0">"What fails first, and what evidence do you want?"</div>
+
+  <div class="tl-cell time p0">1:00–3:00</div>
+  <div class="tl-cell p0">GitHub Actions / Registry <span class="badge danger">P0</span></div>
+  <div class="tl-cell prompt p0">"How do chart packaging, image tags, and registry auth fit together?"</div>
+
+  <div class="tl-cell time p0">3:00–5:00</div>
+  <div class="tl-cell p0">Helm / RBAC failure <span class="badge danger">P0</span></div>
+  <div class="tl-cell prompt p0">"Why would a dry run fail before Helm, and how should preflight be scoped?"</div>
+
+  <div class="tl-cell time p0">5:00–7:00</div>
+  <div class="tl-cell p0">Safe kubectl debugging <span class="badge danger">P0</span></div>
+  <div class="tl-cell prompt p0">"Which commands are safe to run with namespace-only access?"</div>
+
+  <div class="tl-cell time p1">7:00–9:00</div>
+  <div class="tl-cell p1">Image pull / ingress <span class="badge">P1</span></div>
+  <div class="tl-cell prompt p1">"How do you debug ImagePullBackOff or an unreachable app?"</div>
+
+  <div class="tl-cell time p1">9:00–10:00</div>
+  <div class="tl-cell p1">Judgment <span class="badge">P1</span></div>
+  <div class="tl-cell prompt p1">"What would you explicitly avoid doing?"</div>
+</div>
+<p style="font-size:11px;color:var(--muted);margin-bottom:20px;">⚡ <strong>If time is short:</strong> Hit P0-1 → P0-2 → P0-4 → P0-6. These four cover the full delivery chain, RBAC judgment, kubectl safety, and operational boundaries.</p>
+
+<!-- MUST-ASK QUESTIONS -->
+<h2>Must-Ask Questions <span class="badge danger">P0</span></h2>
+
+<div class="q-card p0">
+  <div class="q-id">P0-1</div>
+  <div class="q-text">"Walk me through the path from a GitHub commit to a running pod."</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">Tests whole delivery chain ownership — not just one tool.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Names trigger → build → chart/image publish → immutable tag → Helm values → namespace → rollout → service → ingress.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Jumps to <code>kubectl delete pod</code>; can't link chart values to images; treats Actions as a black box.</div></div>
+  </div>
+</div>
+
+<div class="q-card p0">
+  <div class="q-id">P0-2</div>
+  <div class="q-text">"The dry run fails before Helm executes — RBAC error mentioning kube-system. What do you check first?"</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">This is the exact scenario. Tests whether they pinpoint the right failure layer.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Identifies failing command, service account, verb/resource/namespace, and recognizes it's a preflight — not a chart failure.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Assumes the image or chart is broken; grants cluster-admin; ignores that Helm never ran.</div></div>
+  </div>
+</div>
+
+<div class="q-card p0">
+  <div class="q-id">P0-3</div>
+  <div class="q-text">"How should the preflight be changed to fix this safely?"</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">Tests least privilege in practice, not just theory.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Replaces broad cluster checks with <code>kubectl auth can-i</code> scoped to <code>target-namespace</code>; keeps any cluster-scoped tasks separate.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Disables preflight entirely; makes <code>kubectl cluster-info</code> mandatory; requests broad read without a specific resource need.</div></div>
+  </div>
+</div>
+
+<div class="q-card p0">
+  <div class="q-id">P0-4</div>
+  <div class="q-text">"Which kubectl commands are safe to run during initial diagnosis?"</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">Tests operational safety — good engineers don't mutate before they understand.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Uses only: <code>get</code>, <code>describe</code>, <code>logs</code>, <code>events</code>, <code>rollout status</code>, <code>auth can-i</code> — always with <code>-n target-namespace</code>.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Reaches for <code>apply</code>, <code>delete</code>, <code>rollout restart</code>, or secret dumping first.</div></div>
+  </div>
+</div>
+
+<div class="q-card p0">
+  <div class="q-id">P0-5</div>
+  <div class="q-text">"How would you debug a private registry image pull failure?"</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">Tests registry-to-Kubernetes reasoning end to end.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Checks pod events, image name/tag, registry path, pull secret reference, service account annotation, DNS/TLS symptoms, and tag existence.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Pulls <code>latest</code>; changes credentials blindly; prints registry password into logs.</div></div>
+  </div>
+</div>
+
+<div class="q-card p0">
+  <div class="q-id">P0-6</div>
+  <div class="q-text">"What would you explicitly not do in this environment?"</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">Tests judgment under pressure — separates engineers from cowboys.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Avoids exposing secrets, casual RBAC broadening, mutating prod during diagnosis, deleting pods before reading events, bypassing gates without understanding the failure.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Justifies cluster-admin by speed; mentions secret exposure; reaches for destructive commands first.</div></div>
+  </div>
+</div>
+
+<!-- NICE TO HAVE -->
+<h2>Nice-to-Have Questions <span class="badge">P1</span></h2>
+
+<div class="q-card p1">
+  <div class="q-id">P1-1</div>
+  <div class="q-text">"What does helm template prove, and what does it not prove?"</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">Separates render-time from runtime validation.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Proves chart rendering/values shape — not cluster permissions, image pull success, scheduling, readiness, or app health.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Treats template success as deployment success.</div></div>
+  </div>
+</div>
+
+<div class="q-card p1">
+  <div class="q-id">P1-2</div>
+  <div class="q-text">"How do Rancher roles interact with native Kubernetes RBAC?"</div>
+  <div class="q-grid">
+    <div><div class="q-col-label why">Why it matters</div><div class="q-col-content">Tests on-prem/Rancher platform awareness vs. vanilla K8s assumptions.</div></div>
+    <div><div class="q-col-label strong">Strong signals</div><div class="q-col-content strong-text">Explains Rancher project/cluster roles may map to K8s permissions but should be verified with <code>kubectl auth can-i</code> as the actual deploy identity.</div></div>
+    <div><div class="q-col-label red">Red flags</div><div class="q-col-content red-text">Assumes UI access automatically equals CI service account access.</div></div>
+  </div>
+</div>
+
+<!-- SIGNAL FLAGS -->
+<h2>Signal Summary</h2>
+<div class="flag-grid">
+  <div class="flag-box green">
+    <div class="flag-title green">✓ Hire Signals</div>
+    <ul>
+      <li class="green-text">Starts with: exact failing command, error text, step ordering, namespace, SA, verb/resource</li>
+      <li class="green-text">Recognizes failure occurs before Helm — chart changes alone won't fix it</li>
+      <li class="green-text">Defaults to namespace-scoped checks with <code>-n target-namespace</code></li>
+      <li class="green-text">Separates: helm lint → auth can-i → K8s events → image/ingress</li>
+      <li class="green-text">Proposes rendering manifests to derive required permissions</li>
+      <li class="green-text">Mentions masking secrets and avoiding <code>-o yaml</code> in shared logs</li>
+      <li class="green-text">Knows when cluster-scoped permissions are legitimate and when they aren't</li>
+    </ul>
+  </div>
+  <div class="flag-box red">
+    <div class="flag-title red">✗ Reject Signals</div>
+    <ul>
+      <li class="red-text">"Just give the CI account cluster-admin."</li>
+      <li class="red-text">Conflates <code>helm dry-run</code> with kubectl preflight</li>
+      <li class="red-text">Doesn't notice <code>kube-system</code> in the error message</li>
+      <li class="red-text">Deletes pods or restarts deployments before reading events</li>
+      <li class="red-text">Prints secret YAML, tokens, or credentials into logs or tickets</li>
+      <li class="red-text">Can't explain how <code>imagePullSecrets</code> connect to a private registry</li>
+      <li class="red-text">Accepts <code>latest</code> tags in a controlled deployment pipeline</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PREFERRED FIX -->
+<h2>Preferred Fix — Namespace-Scoped Preflight</h2>
+<ol class="fix-steps">
+  <li>Keep the deploy identity scoped to <code>target-namespace</code> — do not broaden it.</li>
+  <li>Replace broad cluster/kube-system checks with namespace-scoped <code>kubectl auth can-i</code> calls.</li>
+  <li>Check only the resources the release actually needs in <code>target-namespace</code>.</li>
+  <li>Render Helm manifests locally inside CI to identify required namespaced resources.</li>
+  <li>If the chart genuinely requires cluster-scoped resources (CRDs, ClusterRoles), split that into a separately approved admin path.</li>
+</ol>
+
+<pre>
+<span class="comment"># Example: namespace-scoped preflight replacing cluster-level checks</span>
+<span class="cmd">kubectl auth can-i</span> get pods -n target-namespace
+<span class="cmd">kubectl auth can-i</span> create deployments -n target-namespace
+<span class="cmd">kubectl auth can-i</span> update services -n target-namespace
+<span class="cmd">kubectl auth can-i</span> get ingress -n target-namespace
+<span class="cmd">kubectl get</span> namespace target-namespace
+<span class="cmd">helm template</span> release-name ./chart -n target-namespace -f values-app-dev.yaml >/dev/null
+</pre>
+
+<!-- SCORING -->
+<h2>Scoring</h2>
+<div class="score-grid">
+  <div class="score-cell score-num s5">5</div>
+  <div class="score-cell">Clearly separates CI, registry, Helm, Rancher RBAC, and runtime troubleshooting. Proposes namespace-scoped preflight unprompted. Safe operational judgment throughout.</div>
+  <div class="score-cell score-num s4">4</div>
+  <div class="score-cell">Applies least privilege, fixes the preflight correctly, identifies failure layer. May need a prompt to mention secret safety or Rancher/K8s RBAC distinction.</div>
+  <div class="score-cell score-num s3">3</div>
+  <div class="score-cell">Diagnoses with safe read-only commands and explains Helm/image flow. RBAC reasoning present but surface-level.</div>
+  <div class="score-cell score-num s2">2</div>
+  <div class="score-cell">Understands one tool but misses pipeline and RBAC interactions. May conflate render and runtime validation.</div>
+  <div class="score-cell score-num s1">1</div>
+  <div class="score-cell">Reaches for broad permissions or destructive commands first. Cannot trace a commit to a running pod.</div>
+</div>
+
+<div class="footer">
+  <span>Sheet 1 of 2 — Diagnosis Screen</span>
+  <span>Interviewer use only · Do not share with candidate</span>
+</div>
+
+</body>
+</html>

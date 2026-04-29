@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Interview — Build from Scratch</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #4f8ef7;
+    --accent2: #f7c94f;
+    --danger: #f75f5f;
+    --success: #4fd49e;
+    --purple: #b08ef7;
+    --orange: #f7934f;
+    --text: #e2e6f0;
+    --muted: #7b82a0;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 40px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .doc-header {
+    border-bottom: 2px solid var(--accent2);
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .doc-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .doc-title span { color: var(--accent2); }
+  .doc-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; line-height: 1.8; }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent2);
+    color: #0f1117;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-left: 8px;
+  }
+  .badge.p0 { background: var(--danger); color: #fff; }
+  .badge.p1 { background: var(--accent); color: #fff; }
+
+  h2 {
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent2);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .intro-box {
+    background: var(--surface);
+    border-left: 3px solid var(--accent2);
+    padding: 16px 20px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 20px;
+  }
+  .intro-box strong { color: var(--accent2); }
+  .intro-box p { margin-top: 8px; line-height: 1.6; }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .arch-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── Q CARDS ── */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+  }
+  .q-card.gh   { border-left: 4px solid var(--accent); }
+  .q-card.run  { border-left: 4px solid var(--success); }
+  .q-card.jfrog{ border-left: 4px solid var(--orange); }
+  .q-card.ranch{ border-left: 4px solid var(--purple); }
+  .q-card.glue { border-left: 4px solid var(--accent2); }
+
+  .q-section-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tag-gh    { background: rgba(79,142,247,.15); color: var(--accent); border: 1px solid rgba(79,142,247,.3); }
+  .tag-run   { background: rgba(79,212,158,.15); color: var(--success); border: 1px solid rgba(79,212,158,.3); }
+  .tag-jfrog { background: rgba(247,147,79,.15); color: var(--orange); border: 1px solid rgba(247,147,79,.3); }
+  .tag-ranch { background: rgba(176,142,247,.15); color: var(--purple); border: 1px solid rgba(176,142,247,.3); }
+  .tag-glue  { background: rgba(247,201,79,.15); color: var(--accent2); border: 1px solid rgba(247,201,79,.3); }
+
+  .q-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .q-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+  .q-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .q-col-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+  .q-col-label.strong { color: var(--success); }
+  .q-col-label.probe  { color: var(--accent); }
+  .q-col-label.red    { color: var(--danger); }
+  ul { padding-left: 14px; }
+  li { font-size: 12px; color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
+  li.green { color: #a0e8c8; }
+  li.blue  { color: #a0c8f8; }
+  li.red   { color: #f7a0a0; }
+
+  /* component legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .leg-dot {
+    width: 10px; height: 10px; border-radius: 2px;
+  }
+
+  /* scoring */
+  .score-grid {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .sc { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .sc:nth-last-child(-n+2) { border-bottom: none; }
+  .sn {
+    font-family: var(--mono); font-size: 16px; font-weight: 600;
+    background: var(--surface2); display: flex; align-items: center; justify-content: center;
+  }
+  .sn.s5 { color: var(--success); }
+  .sn.s4 { color: #7be8b8; }
+  .sn.s3 { color: var(--accent2); }
+  .sn.s2 { color: var(--orange); }
+  .sn.s1 { color: var(--danger); }
+
+  .footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Decision table */
+  .decision-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    font-size: 12px;
+  }
+  .decision-table th {
+    background: var(--surface2);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    padding: 9px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .decision-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .decision-table tr:last-child td { border-bottom: none; }
+  .decision-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+  .decision-table td:first-child { font-weight: 600; color: var(--text); }
+  .decision-table td:nth-child(2) { color: var(--muted); }
+  .decision-table td:nth-child(3) { color: #a0e8c8; }
+  .decision-table td:nth-child(4) { color: #f7a0a0; }
+
+  @media print {
+    body { background: #fff; color: #000; padding: 20px; }
+    :root {
+      --bg: #fff; --surface: #f6f8fa; --surface2: #eef0f5;
+      --border: #d0d7de; --accent: #0969da; --accent2: #9a6700;
+      --danger: #cf222e; --success: #1a7f37;
+      --purple: #6e40c9; --orange: #bc4c00;
+      --text: #1f2328; --muted: #57606a;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <div>
+    <div class="doc-title">DevOps Interview <span>/ Sheet 2</span></div>
+    <div style="font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px;">Build from Scratch — GitHub · Self-Hosted Runner · JFrog · Rancher</div>
+  </div>
+  <div class="doc-meta">
+    Duration: 15–20 min<br>
+    Format: Design discussion<br>
+    Focus: Architecture · Decisions · Trade-offs
+  </div>
+</div>
+
+<!-- SETUP -->
+<h2>Setup for Candidate</h2>
+<div class="intro-box">
+  <strong>Prompt:</strong>
+  <p>We're building a CI/CD pipeline from scratch. The four core pieces you have available are: <strong>GitHub</strong> for source and workflow orchestration, a <strong>self-hosted GitHub Actions runner</strong> running inside our private network, <strong>JFrog Artifactory</strong> as our artifact and container registry, and a <strong>self-hosted Rancher cluster</strong> for Kubernetes workloads.</p>
+  <p style="margin-top:10px;">Walk me through how you would wire these together — and, just as importantly, <em>why</em> you would make the choices you do. We'll dig into specific pieces as you go.</p>
+  <p style="margin-top:8px;font-size:11px;color:var(--muted);">Let them drive the design first. Use the questions below to probe gaps or test judgment when they stall or skip a layer.</p>
+</div>
+
+<!-- ARCHITECTURE DIAGRAM -->
+<h2>Architecture — The Four Core Pieces</h2>
+<div class="arch-wrap">
+  <div class="arch-label">Component overview — share this with the candidate</div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--accent)"></div>GitHub</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--success)"></div>Self-Hosted Runner</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--orange)"></div>JFrog Artifactory</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Rancher / K8s</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--border)"></div>Network boundary</div>
+  </div>
+
+  <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 860 340">
+    <defs>
+      <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4f8ef7"/>
+      </marker>
+      <marker id="arr2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#f7934f"/>
+      </marker>
+      <marker id="arr3" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#b08ef7"/>
+      </marker>
+      <marker id="arr4" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4fd49e"/>
+      </marker>
+    </defs>
+    <style>
+      .lbl { font-family:'IBM Plex Mono',monospace; font-size:9px; fill:#7b82a0; }
+      .blbl { font-family:'IBM Plex Sans',sans-serif; font-size:12px; font-weight:700; }
+      .bsub { font-family:'IBM Plex Mono',monospace; font-size:10px; fill:#7b82a0; }
+      .ln  { stroke:#4f8ef7; stroke-width:1.8; marker-end:url(#arr);  fill:none; stroke-dasharray:none; }
+      .ln2 { stroke:#f7934f; stroke-width:1.8; marker-end:url(#arr2); fill:none; }
+      .ln3 { stroke:#b08ef7; stroke-width:1.8; marker-end:url(#arr3); fill:none; }
+      .ln4 { stroke:#4fd49e; stroke-width:1.8; marker-end:url(#arr4); fill:none; }
+      .lnd { stroke:#2e3350; stroke-width:1.5; fill:none; stroke-dasharray:5,4; }
+    </style>
+
+    <!-- Network boundary box -->
+    <rect x="200" y="10" width="640" height="320" rx="10" fill="none" stroke="#2e3350" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <text class="lbl" x="212" y="26">private network boundary</text>
+
+    <!-- GitHub (outside network) -->
+    <rect x="10" y="130" width="155" height="80" rx="8" fill="#1a1d27" stroke="#4f8ef7" stroke-width="2"/>
+    <text class="blbl" x="87" y="162" fill="#4f8ef7" text-anchor="middle">GitHub</text>
+    <text class="bsub" x="87" y="179" text-anchor="middle">source + workflows</text>
+    <text class="bsub" x="87" y="194" text-anchor="middle">branch / PR triggers</text>
+
+    <!-- Arrow: GitHub → Runner -->
+    <line class="ln" x1="165" y1="170" x2="218" y2="170"/>
+    <text class="lbl" x="185" y="163">trigger</text>
+
+    <!-- Self-Hosted Runner -->
+    <rect x="220" y="110" width="180" height="110" rx="8" fill="#1a1d27" stroke="#4fd49e" stroke-width="2"/>
+    <text class="blbl" x="310" y="147" fill="#4fd49e" text-anchor="middle">Self-Hosted Runner</text>
+    <text class="bsub" x="310" y="164" text-anchor="middle">inside private network</text>
+    <text class="bsub" x="310" y="180" text-anchor="middle">build · test · package</text>
+    <text class="bsub" x="310" y="196" text-anchor="middle">kubeconfig access</text>
+
+    <!-- Arrow: Runner → JFrog (push) -->
+    <line class="ln2" x1="400" y1="145" x2="460" y2="100"/>
+    <text class="lbl" x="408" y="120">push chart/image</text>
+
+    <!-- Arrow: Runner → JFrog (pull) dashed -->
+    <line class="lnd" x1="460" y1="115" x2="400" y2="160"/>
+    <text class="lbl" x="412" y="148">pull base imgs</text>
+
+    <!-- JFrog Artifactory -->
+    <rect x="460" y="60" width="185" height="110" rx="8" fill="#1a1d27" stroke="#f7934f" stroke-width="2"/>
+    <text class="blbl" x="552" y="95" fill="#f7934f" text-anchor="middle">JFrog Artifactory</text>
+    <text class="bsub" x="552" y="113" text-anchor="middle">Helm chart repo</text>
+    <text class="bsub" x="552" y="129" text-anchor="middle">Docker image registry</text>
+    <text class="bsub" x="552" y="145" text-anchor="middle">binary / dep proxy</text>
+
+    <!-- Arrow: JFrog → Rancher (image pull) -->
+    <line class="ln2" x1="645" y1="115" x2="680" y2="115"/>
+    <text class="lbl" x="648" y="108">image pull</text>
+
+    <!-- Arrow: Runner → Rancher (helm deploy) -->
+    <line class="ln3" x1="400" y1="200" x2="680" y2="220"/>
+    <text class="lbl" x="490" y="225">helm upgrade / deploy</text>
+
+    <!-- Rancher Cluster -->
+    <rect x="680" y="60" width="160" height="260" rx="8" fill="#1a1d27" stroke="#b08ef7" stroke-width="2"/>
+    <text class="blbl" x="760" y="95" fill="#b08ef7" text-anchor="middle">Rancher Cluster</text>
+    <text class="bsub" x="760" y="114" text-anchor="middle">self-hosted K8s</text>
+
+    <!-- Namespace boxes inside Rancher -->
+    <rect x="695" y="128" width="130" height="44" rx="4" fill="#22263a" stroke="#b08ef7" stroke-width="1" stroke-dasharray="3,3"/>
+    <text class="bsub" x="760" y="147" text-anchor="middle" fill="#b08ef7">app-dev</text>
+    <text class="bsub" x="760" y="163" text-anchor="middle">namespace</text>
+
+    <rect x="695" y="184" width="130" height="44" rx="4" fill="#22263a" stroke="#b08ef7" stroke-width="1" stroke-dasharray="3,3"/>
+    <text class="bsub" x="760" y="203" text-anchor="middle" fill="#b08ef7">app-staging</text>
+    <text class="bsub" x="760" y="219" text-anchor="middle">namespace</text>
+
+    <rect x="695" y="240" width="130" height="44" rx="4" fill="#22263a" stroke="#b08ef7" stroke-width="1" stroke-dasharray="3,3"/>
+    <text class="bsub" x="760" y="259" text-anchor="middle" fill="#b08ef7">app-prod</text>
+    <text class="bsub" x="760" y="275" text-anchor="middle">namespace</text>
+
+    <!-- RBAC note -->
+    <text class="lbl" x="697" y="302">RBAC per namespace</text>
+
+    <!-- Secrets label -->
+    <text class="lbl" x="222" y="240">secrets / kubeconfig</text>
+    <text class="lbl" x="222" y="254">stored in GitHub</text>
+    <text class="lbl" x="222" y="268">Actions secrets</text>
+  </svg>
+
+  <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+    <div style="font-size:11px;color:var(--muted);">
+      <span style="color:var(--accent);font-family:var(--mono);font-weight:600;">① Trigger</span><br>
+      GitHub webhook fires workflow on push/PR/tag. Runner is registered in the repo or org and polls for jobs.
+    </div>
+    <div style="font-size:11px;color:var(--muted);">
+      <span style="color:var(--orange);font-family:var(--mono);font-weight:600;">② Build & Publish</span><br>
+      Runner builds the container image and Helm chart, then pushes both to JFrog with an immutable tag (Git SHA or semver).
+    </div>
+    <div style="font-size:11px;color:var(--muted);">
+      <span style="color:var(--purple);font-family:var(--mono);font-weight:600;">③ Deploy</span><br>
+      Runner runs <code>helm upgrade --install</code> against the target namespace. Rancher/K8s pulls the image from JFrog using a pull secret.
+    </div>
+  </div>
+</div>
+
+<!-- QUESTION SECTIONS -->
+<h2>Question Bank — Build Decisions</h2>
+<p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Use these to probe specific layers. Let the candidate design first, then use these questions to fill gaps or pressure-test decisions.</p>
+
+<!-- GITHUB -->
+<div class="q-card gh">
+  <div class="q-section-tag tag-gh">GitHub</div>
+  <div class="q-text">How would you structure your GitHub Actions workflow — and why would you make those choices?</div>
+  <div class="q-sub">Follow-ups: "Would you use a monorepo or separate repos per service?" · "How do you handle environment promotion — same workflow or separate?" · "When does the deploy job run vs. the build job?"</div>
+  <div class="q-cols">
+    <div>
+      <div class="q-col-label strong">Strong signals</div>
+      <ul>
+        <li class="green">Separates build job (produces artifact) from deploy job (consumes it) — with explicit artifact hand-off</li>
+        <li class="green">Uses immutable image tags tied to Git SHA or semver — never <code>latest</code></li>
+        <li class="green">Environment promotion via separate workflow triggers (tag push, manual approval) rather than re-building</li>
+        <li class="green">Stores secrets in GitHub Actions secrets or an external vault — never in workflow YAML</li>
+        <li class="green">Mentions reusable workflows or composite actions for DRY pipelines across services</li>
+      </ul>
+    </div>
+    <div>
+      <div class="q-col-label red">Red flags</div>
+      <ul>
+        <li class="red">One giant workflow that builds, tests, and deploys to prod in a single job</li>
+        <li class="red">Uses <code>latest</code> tag or dynamic tags that aren't traceable to a commit</li>
+        <li class="red">Hardcodes credentials or tokens in workflow YAML</li>
+        <li class="red">Re-builds the container image for every environment rather than promoting the same artifact</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SELF-HOSTED RUNNER -->
+<div class="q-card run">
+  <div class="q-section-tag tag-run">Self-Hosted Runner</div>
+  <div class="q-text">Why do we need a self-hosted runner here — and what does that runner need access to?</div>
+  <div class="q-sub">Follow-ups: "How would you register the runner — repo-level or org-level?" · "What's your runner isolation strategy?" · "How do you handle runner credential sprawl?"</div>
+  <div class="q-cols">
+    <div>
+      <div class="q-col-label strong">Strong signals</div>
+      <ul>
+        <li class="green">Identifies that GitHub-hosted runners can't reach private network resources — that's the core reason for self-hosting</li>
+        <li class="green">Describes what access the runner needs: Docker daemon, JFrog endpoint, kubeconfig/Rancher API, and nothing else</li>
+        <li class="green">Mentions runner isolation: ephemeral runners (new container per job), or at minimum runner groups scoped per environment</li>
+        <li class="green">Stores kubeconfig and registry credentials as GitHub Actions secrets — not baked into the runner image</li>
+        <li class="green">Considers runner lifecycle: how to update, rotate credentials, and scale horizontally</li>
+      </ul>
+    </div>
+    <div>
+      <div class="q-col-label red">Red flags</div>
+      <ul>
+        <li class="red">Can't articulate why a self-hosted runner is necessary — assumes it's just a preference</li>
+        <li class="red">One persistent runner with long-lived credentials baked in — no isolation between jobs</li>
+        <li class="red">Runner has cluster-admin or broad network access because "it's easier"</li>
+        <li class="red">No plan for runner maintenance, patching, or credential rotation</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- JFROG -->
+<div class="q-card jfrog">
+  <div class="q-section-tag tag-jfrog">JFrog Artifactory</div>
+  <div class="q-text">How would you set up JFrog in this pipeline — what repositories, what access model, and what lives there?</div>
+  <div class="q-sub">Follow-ups: "How does Kubernetes pull images from JFrog?" · "How do you handle base image hygiene?" · "How would you enforce immutability on published artifacts?"</div>
+  <div class="q-cols">
+    <div>
+      <div class="q-col-label strong">Strong signals</div>
+      <ul>
+        <li class="green">Distinguishes local repos (built artifacts) from remote/proxy repos (upstream deps) and virtual repos (combined views)</li>
+        <li class="green">Configures an <code>imagePullSecret</code> in each namespace referencing a scoped JFrog service account — not a personal credential</li>
+        <li class="green">Enables immutable tags on release repos so published images can't be overwritten</li>
+        <li class="green">Uses JFrog as a proxy/cache for base images — reduces external dependency on Docker Hub or public registries</li>
+        <li class="green">Considers Xray scanning for vulnerability gating before promotion</li>
+        <li class="green">Separate credentials for write (CI runner) vs. read (Kubernetes pull secret)</li>
+      </ul>
+    </div>
+    <div>
+      <div class="q-col-label red">Red flags</div>
+      <ul>
+        <li class="red">Uses a single admin credential for both pushing and pulling images</li>
+        <li class="red">No concept of imagePullSecrets — assumes Kubernetes can reach the registry unauthenticated</li>
+        <li class="red">Allows mutable tags in production — same tag can be overwritten</li>
+        <li class="red">Pulls base images directly from Docker Hub inside the build rather than through JFrog proxy</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- RANCHER -->
+<div class="q-card ranch">
+  <div class="q-section-tag tag-ranch">Rancher / Kubernetes</div>
+  <div class="q-text">How would you structure the Rancher cluster — namespaces, RBAC, and how Helm fits in?</div>
+  <div class="q-sub">Follow-ups: "How does your CI identity get permission to deploy to a namespace?" · "How do you manage Helm releases across environments?" · "What's the difference between a Rancher project role and a Kubernetes RBAC role?"</div>
+  <div class="q-cols">
+    <div>
+      <div class="q-col-label strong">Strong signals</div>
+      <ul>
+        <li class="green">Separate namespaces per environment (app-dev / app-staging / app-prod) — ideally with separate kubeconfigs or service accounts per namespace</li>
+        <li class="green">CI deploy identity has only the RBAC verbs it needs in its target namespace — nothing cluster-wide</li>
+        <li class="green">Helm release names and values files parameterized per environment — one chart, multiple value overrides</li>
+        <li class="green">Uses Rancher projects to group namespaces logically, but verifies actual K8s RBAC with <code>kubectl auth can-i</code></li>
+        <li class="green">Ingress per namespace; TLS secrets managed in-namespace or via cert-manager</li>
+        <li class="green">Can articulate the difference between Rancher project roles and native K8s ClusterRole/RoleBindings</li>
+      </ul>
+    </div>
+    <div>
+      <div class="q-col-label red">Red flags</div>
+      <ul>
+        <li class="red">Single namespace for all environments — or namespace-per-app without environment separation</li>
+        <li class="red">CI deploy identity has cluster-admin "to keep it simple"</li>
+        <li class="red">Re-builds the Helm chart per environment rather than using value overrides</li>
+        <li class="red">Assumes Rancher UI roles = actual K8s RBAC without verification</li>
+        <li class="red">No plan for secret management — hardcodes app secrets in Helm values</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- GLUE / JUDGMENT -->
+<div class="q-card glue">
+  <div class="q-section-tag tag-glue">Glue & Judgment</div>
+  <div class="q-text">How do these four pieces talk to each other — and where are the failure points you'd design against?</div>
+  <div class="q-sub">Follow-ups: "How do you trace a production incident back to a specific commit?" · "What's your rollback strategy?" · "If you had to pick the single riskiest part of this pipeline, what would it be?"</div>
+  <div class="q-cols">
+    <div>
+      <div class="q-col-label strong">Strong signals</div>
+      <ul>
+        <li class="green">Can trace: Git SHA → image tag → chart version → Helm release → running pod</li>
+        <li class="green">Rollback means <code>helm rollback</code> to a previous release, not re-building from Git</li>
+        <li class="green">Identifies the runner as the trust boundary: it has credentials to both JFrog and Rancher — and that's what needs the most protection</li>
+        <li class="green">Mentions pipeline gates: lint, test, scan, preflight checks before deploy</li>
+        <li class="green">Describes how to handle a broken deploy without a full pipeline run — e.g., manual helm rollback with restricted access</li>
+      </ul>
+    </div>
+    <div>
+      <div class="q-col-label red">Red flags</div>
+      <ul>
+        <li class="red">Can't trace an artifact version back to a commit</li>
+        <li class="red">Rollback means re-deploying from Git HEAD — no concept of pinned release history</li>
+        <li class="red">No awareness of the runner as a security-sensitive component</li>
+        <li class="red">No gates between build and deploy — any commit goes straight to production</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- DESIGN DECISIONS TABLE -->
+<h2>Key Design Decision Quick-Reference</h2>
+<table class="decision-table">
+  <thead>
+    <tr>
+      <th>Decision</th>
+      <th>The question to ask</th>
+      <th>Good answer</th>
+      <th>Concern</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Image tagging</td>
+      <td>How do you version container images?</td>
+      <td>Immutable tags — Git SHA or semver. Never latest in CI.</td>
+      <td>Uses <code>latest</code> or timestamp tags with no traceability.</td>
+    </tr>
+    <tr>
+      <td>Runner access</td>
+      <td>What can the runner reach?</td>
+      <td>JFrog endpoint, kubeconfig for target namespace only, nothing else.</td>
+      <td>Runner has broad network access or cluster-admin by default.</td>
+    </tr>
+    <tr>
+      <td>Registry credentials</td>
+      <td>How does Kubernetes pull from JFrog?</td>
+      <td><code>imagePullSecret</code> per namespace, scoped read-only JFrog token.</td>
+      <td>Shared admin credential or no auth assumed.</td>
+    </tr>
+    <tr>
+      <td>RBAC model</td>
+      <td>What can the CI identity do in Kubernetes?</td>
+      <td>Namespace-scoped Role/RoleBinding covering only required verbs and resources.</td>
+      <td>ClusterRole or cluster-admin "to avoid permission issues."</td>
+    </tr>
+    <tr>
+      <td>Environment promotion</td>
+      <td>How does an artifact move from dev to prod?</td>
+      <td>Same image tag promoted through environments — no rebuilds.</td>
+      <td>Rebuilt per environment — different artifact in staging vs. prod.</td>
+    </tr>
+    <tr>
+      <td>Secrets management</td>
+      <td>Where do app secrets live?</td>
+      <td>External secrets operator, Vault, or sealed secrets — not in Helm values YAML.</td>
+      <td>Plain text in Helm values or committed to the repo.</td>
+    </tr>
+    <tr>
+      <td>Rollback</td>
+      <td>How do you recover a bad deploy fast?</td>
+      <td><code>helm rollback</code> to a pinned prior revision — no pipeline run needed.</td>
+      <td>Rollback requires re-running the pipeline from a previous commit.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- SCORING -->
+<h2>Scoring</h2>
+<div class="score-grid">
+  <div class="sc sn s5">5</div>
+  <div class="sc">Designs the full pipeline unprompted: immutable tagging, runner isolation, scoped RBAC, pull secrets, environment promotion without rebuilding, and clear rollback path. Identifies the runner as the key trust boundary and proposes gates between stages.</div>
+  <div class="sc sn s4">4</div>
+  <div class="sc">Covers all four components with sound decisions. May need a prompt on one area (e.g., secrets management or Rancher vs. K8s RBAC distinction). Trade-off reasoning is clear and defensible.</div>
+  <div class="sc sn s3">3</div>
+  <div class="sc">Understands the pipeline flow and most security basics. Has gaps in one or two areas — e.g., vague on imagePullSecret setup or RBAC scoping. Can be coached to the right answer.</div>
+  <div class="sc sn s2">2</div>
+  <div class="sc">Knows individual tools but can't connect them into a coherent design. Relies on broad permissions or rebuilds per environment. Security reasoning is reactive rather than proactive.</div>
+  <div class="sc sn s1">1</div>
+  <div class="sc">Cannot design beyond one layer. Reaches for cluster-admin, uses latest tags, or conflates runner access with application runtime permissions. No concept of artifact traceability.</div>
+</div>
+
+<div class="footer">
+  <span>Sheet 2 of 2 — Build from Scratch</span>
+  <span>Interviewer use only · Do not share with candidate (diagram excepted)</span>
+</div>
+
+</body>
+</html>
